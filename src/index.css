@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---- Signature palette: dark showroom obsidian + Cloud Dancer white + bronze trim ---- */
+  --color-obsidian: #0a0a0c;
+  --color-obsidian-2: #131316;
+  --color-obsidian-3: #1c1c20;
+  --color-obsidian-4: #26262b;
+
+  --color-cloud: #f2f0ea;
+  --color-cloud-dim: #c9c6bc;
+  --color-cloud-faint: #8f8c86;
+
+  --color-chrome-300: #dadce0;
+  --color-chrome-600: #8b8e96;
+
+  --color-bronze: #c08a3e;
+  --color-bronze-glow: #f0c989;
+  --color-bronze-deep: #8a5f26;
+
+  --font-display: "Unbounded", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-data: "Space Mono", monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-obsidian);
+    color: var(--color-cloud);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background-color: var(--color-bronze);
+    color: var(--color-obsidian);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-bronze-glow);
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* ---- Hairline grain overlay: keeps the deep dark from feeling flat/plastic ---- */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- Signature hero: self-drawing car line + sweeping showroom light ---- */
+@keyframes draw-line {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes headlight-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    filter: blur(1px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(0.2px);
+  }
+}
+@keyframes light-sweep {
+  0% {
+    transform: translateX(-60%) rotate(-8deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.15;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(60%) rotate(-8deg);
+    opacity: 0;
+  }
+}
+@keyframes drift-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-draw-line {
+  animation: draw-line 2.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.animate-headlight {
+  animation: headlight-pulse 3.2s ease-in-out infinite;
+}
+.animate-sweep {
+  animation: light-sweep 7s ease-in-out infinite;
+}
+.animate-drift-up {
+  animation: drift-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-marquee {
+  animation: marquee 34s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-draw-line,
+  .animate-headlight,
+  .animate-sweep,
+  .animate-drift-up,
+  .animate-marquee {
+    animation: none !important;
+  }
+}
