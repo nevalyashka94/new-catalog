@@ -25,14 +25,14 @@ export const cars: Car[] = [
 ];
 
 export const regions: Region[] = [
-  { id: "msk", city: "Москва", federalDistrict: "Центральный ФО", dealers: 14, showrooms: ["Кутузовский проспект", "Ленинградское шоссе", "Каширское шоссе"] },
-  { id: "spb", city: "Санкт-Петербург", federalDistrict: "Северо-Западный ФО", dealers: 9, showrooms: ["Пулковское шоссе", "Приморский район"] },
-  { id: "kzn", city: "Казань", federalDistrict: "Приволжский ФО", dealers: 5, showrooms: ["Проспект Победы"] },
-  { id: "ekb", city: "Екатеринбург", federalDistrict: "Уральский ФО", dealers: 6, showrooms: ["Сибирский тракт"] },
-  { id: "nsk", city: "Новосибирск", federalDistrict: "Сибирский ФО", dealers: 4, showrooms: ["Бердское шоссе"] },
-  { id: "rnd", city: "Ростов-на-Дону", federalDistrict: "Южный ФО", dealers: 3, showrooms: ["Западное шоссе"] },
-  { id: "krd", city: "Краснодар", federalDistrict: "Южный ФО", dealers: 4, showrooms: ["Ростовское шоссе"] },
-  { id: "vld", city: "Владивосток", federalDistrict: "Дальневосточный ФО", dealers: 2, showrooms: ["Некрасовское шоссе"] },
+  { id: "msk", city: "Москва", federalDistrict: "Центральный ФО", dealers: 14, showrooms: ["Кутузовский проспект", "Ленинградское шоссе", "Каширское шоссе"], availableBrandIds: ["aurion", "vellante", "norrvik", "kestrel", "meridian", "orsa"] },
+  { id: "spb", city: "Санкт-Петербург", federalDistrict: "Северо-Западный ФО", dealers: 9, showrooms: ["Пулковское шоссе", "Приморский район"], availableBrandIds: ["aurion", "vellante", "norrvik", "kestrel", "meridian"] },
+  { id: "kzn", city: "Казань", federalDistrict: "Приволжский ФО", dealers: 5, showrooms: ["Проспект Победы"], availableBrandIds: ["aurion", "meridian", "orsa"] },
+  { id: "ekb", city: "Екатеринбург", federalDistrict: "Уральский ФО", dealers: 6, showrooms: ["Сибирский тракт"], availableBrandIds: ["aurion", "norrvik", "meridian", "orsa"] },
+  { id: "nsk", city: "Новосибирск", federalDistrict: "Сибирский ФО", dealers: 4, showrooms: ["Бердское шоссе"], availableBrandIds: ["meridian", "orsa"] },
+  { id: "rnd", city: "Ростов-на-Дону", federalDistrict: "Южный ФО", dealers: 3, showrooms: ["Западное шоссе"], availableBrandIds: ["aurion", "meridian"] },
+  { id: "krd", city: "Краснодар", federalDistrict: "Южный ФО", dealers: 4, showrooms: ["Ростовское шоссе"], availableBrandIds: ["aurion", "kestrel", "meridian", "orsa"] },
+  { id: "vld", city: "Владивосток", federalDistrict: "Дальневосточный ФО", dealers: 2, showrooms: ["Некрасовское шоссе"], availableBrandIds: ["meridian", "orsa"] },
 ];
 
 export const formatPrice = (value: number) =>

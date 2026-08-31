@@ -24,4 +24,5 @@ export interface Region {
   federalDistrict: string;
   dealers: number;
   showrooms: string[];
+  availableBrandIds: string[];
 }

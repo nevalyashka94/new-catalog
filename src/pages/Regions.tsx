@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { regions } from "../data/mock";
 
 export default function Regions() {
@@ -13,9 +14,10 @@ export default function Regions() {
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {regions.map((r) => (
-          <div
+          <Link
+            to={`/regions/${r.id}`}
             key={r.id}
-            className="rounded-2xl border border-[var(--color-cloud)]/10 bg-[var(--color-obsidian-2)] p-6 transition-colors duration-300 hover:border-[var(--color-bronze)]/40"
+            className="rounded-2xl border border-[var(--color-cloud)]/10 bg-[var(--color-obsidian-2)] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[var(--color-bronze)]/40"
           >
             <div className="flex items-start justify-between">
               <div>
@@ -35,7 +37,7 @@ export default function Regions() {
                 </li>
               ))}
             </ul>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
