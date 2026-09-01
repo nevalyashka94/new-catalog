@@ -1,28 +1,28 @@
 export interface Brand {
-  id: string;
+  id: number;
   name: string;
-  country: string;
-  founded: number;
-  tagline: string;
-  description: string;
 }
 
 export interface Car {
-  id: string;
-  brandId: string;
+  id: number;
+  brandId: number;
+  brandName: string;
   model: string;
   body: string;
   priceFrom: number;
-  power: string;
-  accel: string;
+  priceTo: number;
   description: string;
+  imageUrl: string | null;
 }
 
-export interface Region {
-  id: string;
+export interface Dealer {
+  id: number;
+  name: string;
+  dealerCode: string;
   city: string;
-  federalDistrict: string;
-  dealers: number;
-  showrooms: string[];
-  availableBrandIds: string[];
+}
+
+export interface CarDealerLink {
+  carId: number;
+  dealerId: number;
 }

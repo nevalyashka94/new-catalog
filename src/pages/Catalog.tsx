@@ -1,94 +1,191 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import CarCard from "../components/CarCard";
-import { brands, cars } from "../data/mock";
+import { fetchBrands, fetchCars } from "../data/source";
+import type { Brand, Car } from "../types";
+
+const BODY_TYPES = ["Седан", "Купе", "Кроссовер", "Универсал", "Лифтбек", "Родстер", "Внедорожник"];
+
+const PRICE_BUCKETS = [
+  { label: "до 2 млн", min: 0, max: 2_000_000 },
+  { label: "3–4 млн", min: 3_000_000, max: 4_000_000 },
+  { label: "5–6 млн", min: 5_000_000, max: 6_000_000 },
+  { label: "7 млн+", min: 7_000_000, max: Infinity },
+];
 
 export default function Catalog() {
-  const [searchParams] = useSearchParams();
-  const initialBrand = searchParams.get("brand") ?? "all";
-  const initialMaxPrice = searchParams.get("maxPrice");
+  const [cars, setCars] = useState<Car[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [brandFilter, setBrandFilter] = useState<string>(initialBrand);
-  const [maxPrice, setMaxPrice] = useState<number | null>(initialMaxPrice ? Number(initialMaxPrice) : null);
+  const [brandFilter, setBrandFilter] = useState<string>("all");
+  const [bodyFilter, setBodyFilter] = useState<string>("all");
+  const [modelQuery, setModelQuery] = useState("");
+  const [priceFrom, setPriceFrom] = useState("");
+  const [priceTo, setPriceTo] = useState("");
+  const [bucket, setBucket] = useState<number | null>(null);
   const [sort, setSort] = useState<"price-asc" | "price-desc">("price-asc");
+  const [reloadKey, setReloadKey] = useState(0);
 
-  // Re-apply filters if the assistant sends the user here again with new params
   useEffect(() => {
-    setBrandFilter(searchParams.get("brand") ?? "all");
-    const mp = searchParams.get("maxPrice");
-    setMaxPrice(mp ? Number(mp) : null);
-  }, [searchParams]);
+    let alive = true;
+    setLoading(true);
+    Promise.all([fetchCars(), fetchBrands()]).then(([c, b]) => {
+      if (alive) {
+        setCars(c);
+        setBrands(b);
+        setLoading(false);
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, [reloadKey]);
+
+  const bodyTypesInCatalog = useMemo(() => {
+    const set = new Set(cars.map((c) => c.body));
+    return BODY_TYPES.filter((b) => set.has(b));
+  }, [cars]);
 
   const filtered = useMemo(() => {
-    let list = brandFilter === "all" ? cars : cars.filter((c) => c.brandId === brandFilter);
-    if (maxPrice) list = list.filter((c) => c.priceFrom <= maxPrice);
-    return [...list].sort((a, b) =>
-      sort === "price-asc" ? a.priceFrom - b.priceFrom : b.priceFrom - a.priceFrom
-    );
-  }, [brandFilter, maxPrice, sort]);
+    let list = cars;
+
+    if (brandFilter !== "all") list = list.filter((c) => String(c.brandId) === brandFilter);
+    if (bodyFilter !== "all") list = list.filter((c) => c.body === bodyFilter);
+    if (modelQuery.trim()) {
+      const q = modelQuery.trim().toLowerCase();
+      list = list.filter((c) => c.model.toLowerCase().includes(q) || c.brandName.toLowerCase().includes(q));
+    }
+
+    const from = priceFrom ? Number(priceFrom) : null;
+    const to = priceTo ? Number(priceTo) : null;
+    if (from !== null) list = list.filter((c) => c.priceTo >= from);
+    if (to !== null) list = list.filter((c) => c.priceFrom <= to);
+
+    if (bucket !== null) {
+      const b = PRICE_BUCKETS[bucket];
+      list = list.filter((c) => c.priceFrom <= b.max && c.priceTo >= b.min);
+    }
+
+    return [...list].sort((a, b) => (sort === "price-asc" ? a.priceFrom - b.priceFrom : b.priceFrom - a.priceFrom));
+  }, [cars, brandFilter, bodyFilter, modelQuery, priceFrom, priceTo, bucket, sort]);
+
+  const resetFilters = () => {
+    setBrandFilter("all");
+    setBodyFilter("all");
+    setModelQuery("");
+    setPriceFrom("");
+    setPriceTo("");
+    setBucket(null);
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-6 pb-24 pt-32 sm:px-8 lg:px-12">
       <p className="font-data text-xs uppercase tracking-[0.3em] text-[var(--color-bronze-glow)]">Каталог</p>
-      <h1 className="mt-3 font-display text-4xl font-semibold text-[var(--color-cloud)] sm:text-5xl">
-        Все модели
-      </h1>
+      <h1 className="mt-3 font-display text-4xl font-semibold text-[var(--color-cloud)] sm:text-5xl">Все модели</h1>
 
-      <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-2">
+      {/* Быстрые фильтры по цене */}
+      <div className="mt-8 flex flex-wrap gap-2">
+        {PRICE_BUCKETS.map((b, i) => (
           <button
-            onClick={() => setBrandFilter("all")}
-            className={`rounded-full border px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide transition-colors duration-200 ${
-              brandFilter === "all"
+            key={b.label}
+            onClick={() => setBucket(bucket === i ? null : i)}
+            className={`rounded-full border px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide transition-colors ${
+              bucket === i
                 ? "border-[var(--color-bronze)] bg-[var(--color-bronze)] text-[var(--color-obsidian)]"
                 : "border-[var(--color-cloud)]/15 text-[var(--color-cloud-dim)] hover:text-[var(--color-cloud)]"
             }`}
           >
-            Все бренды
+            {b.label}
           </button>
-          {brands.map((b) => (
-            <button
-              key={b.id}
-              onClick={() => setBrandFilter(b.id)}
-              className={`rounded-full border px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide transition-colors duration-200 ${
-                brandFilter === b.id
-                  ? "border-[var(--color-bronze)] bg-[var(--color-bronze)] text-[var(--color-obsidian)]"
-                  : "border-[var(--color-cloud)]/15 text-[var(--color-cloud-dim)] hover:text-[var(--color-cloud)]"
-              }`}
-            >
-              {b.name}
-            </button>
-          ))}
-        </div>
+        ))}
+      </div>
 
+      {/* Развёрнутый фильтр */}
+      <div className="mt-5 grid gap-4 rounded-2xl border border-[var(--color-cloud)]/10 bg-[var(--color-obsidian-2)] p-5 sm:grid-cols-2 lg:grid-cols-5">
+        <label className="block">
+          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cloud-faint)]">Цена от, ₽</span>
+          <input
+            type="number"
+            value={priceFrom}
+            onChange={(e) => setPriceFrom(e.target.value)}
+            placeholder="0"
+            className="mt-1.5 w-full rounded-xl border border-[var(--color-cloud)]/15 bg-[var(--color-obsidian)] px-3.5 py-2.5 font-data text-sm text-[var(--color-cloud)] outline-none focus:border-[var(--color-bronze)]"
+          />
+        </label>
+        <label className="block">
+          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cloud-faint)]">Цена до, ₽</span>
+          <input
+            type="number"
+            value={priceTo}
+            onChange={(e) => setPriceTo(e.target.value)}
+            placeholder="30 000 000"
+            className="mt-1.5 w-full rounded-xl border border-[var(--color-cloud)]/15 bg-[var(--color-obsidian)] px-3.5 py-2.5 font-data text-sm text-[var(--color-cloud)] outline-none focus:border-[var(--color-bronze)]"
+          />
+        </label>
+        <label className="block">
+          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cloud-faint)]">Кузов</span>
+          <select
+            value={bodyFilter}
+            onChange={(e) => setBodyFilter(e.target.value)}
+            className="mt-1.5 w-full rounded-xl border border-[var(--color-cloud)]/15 bg-[var(--color-obsidian)] px-3.5 py-2.5 font-body text-sm text-[var(--color-cloud)] outline-none focus:border-[var(--color-bronze)]"
+          >
+            <option value="all">Любой</option>
+            {bodyTypesInCatalog.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cloud-faint)]">Бренд</span>
+          <select
+            value={brandFilter}
+            onChange={(e) => setBrandFilter(e.target.value)}
+            className="mt-1.5 w-full rounded-xl border border-[var(--color-cloud)]/15 bg-[var(--color-obsidian)] px-3.5 py-2.5 font-body text-sm text-[var(--color-cloud)] outline-none focus:border-[var(--color-bronze)]"
+          >
+            <option value="all">Любой</option>
+            {brands.map((b) => (
+              <option key={b.id} value={String(b.id)}>{b.name}</option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cloud-faint)]">Модель / марка</span>
+          <input
+            value={modelQuery}
+            onChange={(e) => setModelQuery(e.target.value)}
+            placeholder="Например, GT4"
+            className="mt-1.5 w-full rounded-xl border border-[var(--color-cloud)]/15 bg-[var(--color-obsidian)] px-3.5 py-2.5 font-body text-sm text-[var(--color-cloud)] outline-none focus:border-[var(--color-bronze)]"
+          />
+        </label>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <button onClick={resetFilters} className="font-body text-xs font-semibold text-[var(--color-cloud-faint)] hover:text-[var(--color-cloud)]">
+          Сбросить фильтры
+        </button>
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as "price-asc" | "price-desc")}
-          className="rounded-full border border-[var(--color-cloud)]/15 bg-[var(--color-obsidian-2)] px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-[var(--color-cloud-dim)] focus:text-[var(--color-cloud)]"
+          className="rounded-full border border-[var(--color-cloud)]/15 bg-[var(--color-obsidian-2)] px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-[var(--color-cloud-dim)]"
         >
           <option value="price-asc">Сначала дешевле</option>
           <option value="price-desc">Сначала дороже</option>
         </select>
       </div>
 
-      {maxPrice && (
-        <button
-          onClick={() => setMaxPrice(null)}
-          className="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-bronze)]/40 px-4 py-1.5 font-data text-xs text-[var(--color-bronze-glow)]"
-        >
-          Цена до {new Intl.NumberFormat("ru-RU").format(maxPrice)} ₽ ✕
-        </button>
+      {loading ? (
+        <p className="mt-16 text-center font-body text-[var(--color-cloud-faint)]">Загрузка каталога…</p>
+      ) : (
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((car) => (
+            <CarCard key={car.id} car={car} onCarUpdated={() => setReloadKey((k) => k + 1)} />
+          ))}
+        </div>
       )}
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((car) => (
-          <CarCard key={car.id} car={car} />
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <p className="mt-16 text-center font-body text-[var(--color-cloud-faint)]">
-          По этому фильтру пока нет моделей в каталоге.
+          Ничего не найдено — попробуйте изменить фильтры.
         </p>
       )}
     </div>

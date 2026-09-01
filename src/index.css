@@ -23,25 +23,45 @@
   --font-data: "Space Mono", monospace;
 }
 
-/* ---- Light theme: same tokens, daylight showroom instead of night showroom ----
-   Headlights read as "off" in daylight — see HeroCar, which switches its own
-   fill/animation based on theme rather than relying on color alone. */
+/* ---- Light theme: same tokens, inverted for a bright quiet-luxury showroom ---- */
 :root[data-theme="light"] {
-  --color-obsidian: #f2f0ea;
-  --color-obsidian-2: #e7e3d9;
-  --color-obsidian-3: #dbd6c8;
-  --color-obsidian-4: #cdc7b6;
+  --color-obsidian: #f5f3ee;
+  --color-obsidian-2: #ece8df;
+  --color-obsidian-3: #e1dccf;
+  --color-obsidian-4: #d3cdbb;
 
   --color-cloud: #17171a;
-  --color-cloud-dim: #45433d;
-  --color-cloud-faint: #6d6a61;
+  --color-cloud-dim: #4a4944;
+  --color-cloud-faint: #7a776e;
 
-  --color-chrome-300: #6b6e76;
-  --color-chrome-600: #43454b;
+  --color-chrome-300: #3a3c41;
+  --color-chrome-600: #6b6e76;
 
-  --color-bronze: #a86f2c;
-  --color-bronze-glow: #b87a2a;
-  --color-bronze-deep: #74501f;
+  --color-bronze: #a06a26;
+  --color-bronze-glow: #c08a3e;
+  --color-bronze-deep: #7a5420;
+}
+
+:root {
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* ---- Light theme: same showroom, daylight instead of night ---- */
+:root[data-theme="light"] {
+  --color-obsidian: #f2f0ea;
+  --color-obsidian-2: #e8e5dd;
+  --color-obsidian-3: #ddd9cf;
+  --color-obsidian-4: #d0ccc0;
+
+  --color-cloud: #17161a;
+  --color-cloud-dim: #46443f;
+  --color-cloud-faint: #6b6862;
+
+  --color-chrome-300: #4a4a4f;
+  --color-chrome-600: #86868c;
 }
 
 @layer base {
@@ -138,27 +158,6 @@
   }
 }
 
-/* ---- Hero entrance: car drives in from off-screen to near-fullscreen ---- */
-@keyframes hero-drive-in {
-  0% {
-    transform: translateX(-38%) scale(0.72);
-    opacity: 0;
-    filter: blur(14px) brightness(0.6);
-  }
-  45% {
-    opacity: 1;
-    filter: blur(3px) brightness(0.85);
-  }
-  100% {
-    transform: translateX(0%) scale(1);
-    opacity: 1;
-    filter: blur(0px) brightness(1);
-  }
-}
-.animate-hero-drive-in {
-  animation: hero-drive-in 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
 .animate-draw-line {
   animation: draw-line 2.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
@@ -180,8 +179,7 @@
   .animate-headlight,
   .animate-sweep,
   .animate-drift-up,
-  .animate-marquee,
-  .animate-hero-drive-in {
+  .animate-marquee {
     animation: none !important;
   }
 }

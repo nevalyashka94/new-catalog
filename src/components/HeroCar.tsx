@@ -4,23 +4,19 @@ export default function HeroCar() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const headlightFill = isDark ? "var(--color-bronze-glow)" : "var(--color-chrome-600)";
-  const headlightClass = isDark ? "animate-headlight" : "";
-  const bodyStroke = isDark ? "var(--color-chrome-300)" : "var(--color-chrome-600)";
-
   return (
-    <div className="animate-hero-drive-in relative mx-auto aspect-[16/8] w-full max-w-6xl">
-      {/* Showroom spotlight — warmer & brighter when headlights are "on" */}
+    <div className="relative mx-auto aspect-[16/6.5] w-full max-w-5xl">
+      {/* Showroom spotlight — ярче в тёмной теме, почти не видна в светлой */}
       <div
-        className="absolute left-1/2 top-1/2 h-[130%] w-[85%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-opacity duration-700"
+        className="absolute left-1/2 top-1/2 h-[130%] w-[75%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-opacity duration-700"
         style={{
-          opacity: isDark ? 0.8 : 0.4,
+          opacity: isDark ? 0.75 : 0.25,
           background:
             "radial-gradient(closest-side, rgba(240,201,137,0.18), rgba(240,201,137,0.04) 55%, transparent 75%)",
         }}
       />
 
-      {/* Sweeping light beam — only meaningful in the dark showroom */}
+      {/* Sweeping light beam — только в тёмной теме, в светлой не нужна (и так светло) */}
       {isDark && (
         <div className="absolute inset-0 overflow-hidden rounded-[2rem]">
           <div
@@ -52,7 +48,7 @@ export default function HeroCar() {
              C 234 176, 206 200, 206 234
              L 128 234
              C 116 234, 110 228, 110 220 Z"
-          stroke={bodyStroke}
+          stroke="var(--color-chrome-300)"
           strokeWidth="2.5"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -74,12 +70,32 @@ export default function HeroCar() {
           style={{ animationDelay: "0.3s" }}
         />
 
-        <circle cx="268" cy="234" r="34" stroke={bodyStroke} strokeWidth="2.5" />
+        <circle cx="268" cy="234" r="34" stroke="var(--color-chrome-300)" strokeWidth="2.5" />
         <circle cx="268" cy="234" r="14" stroke="var(--color-chrome-600)" strokeWidth="1.5" />
-        <circle cx="638" cy="234" r="34" stroke={bodyStroke} strokeWidth="2.5" />
+        <circle cx="638" cy="234" r="34" stroke="var(--color-chrome-300)" strokeWidth="2.5" />
         <circle cx="638" cy="234" r="14" stroke="var(--color-chrome-600)" strokeWidth="1.5" />
 
-        <circle cx="805" cy="188" r="6" fill={headlightFill} className={headlightClass} />
+        {/* Фара: горит и пульсирует в тёмной теме, гаснет (тускло-серая, без свечения) в светлой */}
+        <circle
+          cx="805"
+          cy="188"
+          r="7"
+          fill={isDark ? "var(--color-bronze-glow)" : "var(--color-chrome-600)"}
+          className={isDark ? "animate-headlight" : ""}
+          style={{
+            transition: "fill 0.6s ease, opacity 0.6s ease",
+            opacity: isDark ? 1 : 0.4,
+            filter: isDark ? "drop-shadow(0 0 6px var(--color-bronze-glow))" : "none",
+          }}
+        />
+        {/* Задний габарит: обратная логика — тлеет в светлой, гаснет в тёмной (луч фары важнее) */}
+        <circle
+          cx="118"
+          cy="200"
+          r="4"
+          fill={isDark ? "var(--color-bronze-deep)" : "var(--color-chrome-600)"}
+          style={{ transition: "fill 0.6s ease", opacity: 0.6 }}
+        />
       </svg>
     </div>
   );
